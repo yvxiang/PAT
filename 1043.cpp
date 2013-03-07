@@ -40,17 +40,6 @@ bool check_mirrot_bst(int start,int end)
 }
 void post_visited_bst(int s,int e)
 {
-/*	if(!root)
-		return ;
-	post_visited(root->lchild);
-	post_visited(root->rchild);
-	printf("%d",root->data);
-	count++;
-	if(count==N)
-		putchar('\n');
-	else
-		putchar(' ');
-*/
 	if(s>e)
 		return ;
 	if(s==e) {
