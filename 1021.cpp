@@ -2,18 +2,21 @@
 #include <string.h>
 #include <stdlib.h>
 #include <queue>
+#include <algorithm>
 using namespace std;
 
 int N;
-bool mat[10002][10002];
 int father[10002];
 int deepth[10002];
+typedef struct Edge {
+	int s,e;
+}Edge;
+Edge edges[10002];
 
 int find_father(int child)
 {
-	if(father[child]==child)
-		return father[child];
-	father[child]=find_father(father[child]);
+	while(father[child]!=child)
+		child=father[child];
 	return father[child];
 }
 void Union(int fa,int fb)
@@ -25,36 +28,49 @@ void Union(int fa,int fb)
 int calc_deepth(int node_number)
 {
 	bool visited[10002]={false};
+	int d[10002];
 	queue<int> Q;
 	Q.push(node_number);
 	visited[node_number]=true;
-	int cur_node;
-	int cur_deep=0;
+	d[node_number]=0;
 	while(!Q.empty()) {
-		cur_deep++;
-		int cur_level_width=Q.size();
-		int i,j;
-		for(i=0;i<cur_level_width;i++) {
-			cur_node=Q.front();
-			Q.pop();
-			for(j=1;j<=N;j++) {
-				if(!visited[j]&&mat[cur_node][j]!=0) {
-					Q.push(j);
-					visited[j]=true;
-				}
+		int cur_node=Q.front();
+		int i;
+		bool flag=false;
+		for(i=1;i<N;i++) {
+			if(edges[i].s==cur_node&&!visited[edges[i].e]) {
+				visited[edges[i].e]=true;
+				Q.push(edges[i].e);
+				d[edges[i].e]=d[cur_node]+1;
+				flag=true;
+			} else if(edges[i].e==cur_node&&!visited[edges[i].s]) {
+				visited[edges[i].s]=true;
+				Q.push(edges[i].s);
+				d[edges[i].s]=d[cur_node]+1;
+				flag=true;
 			}
 		}
+		if(!flag)
+			break;
+		Q.pop();
 	}
-	return cur_deep;
+	int i,max_d=-1;
+	for(i=1;i<=N;i++)
+		if(max_d<d[i])
+			max_d=d[i];
+	return max_d;
 }
 void init()
 {
-	int i,j;
-	for(i=1;i<=N;i++) {
+	int i;
+	for(i=1;i<=N;i++)
 		father[i]=i;
-	   	for(j=1;j<=i;j++)
-			mat[i][j]=mat[j][i]=0;
-	}
+}
+bool cmp(Edge a,Edge b)
+{
+	if(a.s!=b.s)
+		return a.s<b.s;
+	return a.e<b.e;
 }
 int main()
 {
@@ -63,7 +79,8 @@ int main()
 	int count=0,i,a,b;
 	for(i=1;i<N;i++) {
 		scanf("%d%d",&a,&b);
-		mat[a][b]=mat[b][a]=1;
+		edges[i].s=a;
+		edges[i].e=b;
 		int fa=find_father(a);
 		int fb=find_father(b);
 		if(fa!=fb) {
