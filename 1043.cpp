@@ -1,15 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stack>
+using namespace std;
 int N;
 int numbers[1002];
-int count=0;
-typedef struct Node {
-	int data;
-	Node *lchild;
-	Node *rchild;
-}*NODE;
-
+stack<int> S;
 bool check_bst(int start,int end)
 {
 	if(start>end)
@@ -42,43 +38,9 @@ bool check_mirrot_bst(int start,int end)
 			return false;
 	return check_mirrot_bst(start+1,pos)&&check_mirrot_bst(pos+1,end);
 }
-void create_bst_tree(int s,int e,NODE &root)
+void post_visited_bst(int s,int e)
 {
-	if(s>e)
-		return ;
-	if(!(1<=s&&s<=N)||!(1<=e&&e<=N))
-		return ;
-	int i;
-	root=(NODE)malloc(sizeof(Node));
-	root->lchild=NULL;
-	root->rchild=NULL;
-	root->data=numbers[s];
-	for(i=s+1;i<=e;i++)
-		if(numbers[i]>numbers[s])
-			break;
-	create_bst_tree(s+1,i-1,root->lchild);
-	create_bst_tree(i,e,root->rchild);
-}
-void create_mirror_bst_tree(int s,int e,NODE &root)
-{
-	if(s>e)
-		return ;
-	if(!(1<=s&&s<=N)||!(1<=e&&e<=N))
-		return ;
-	int i;
-	root=(NODE)malloc(sizeof(Node));
-	root->lchild=NULL;
-	root->rchild=NULL;
-	root->data=numbers[s];
-	for(i=s;i<=e;i++)
-		if(numbers[i]<numbers[s])
-			break;
-	create_mirror_bst_tree(s+1,i-1,root->lchild);
-	create_mirror_bst_tree(i,e,root->rchild);
-}
-void post_visited(NODE root)
-{
-	if(!root)
+/*	if(!root)
 		return ;
 	post_visited(root->lchild);
 	post_visited(root->rchild);
@@ -88,7 +50,39 @@ void post_visited(NODE root)
 		putchar('\n');
 	else
 		putchar(' ');
+*/
+	if(s>e)
+		return ;
+	if(s==e) {
+		S.push(numbers[s]);
+		return ;
+	}
+	S.push(numbers[s]);
+	int i;
+	for(i=s+1;i<=e;i++)
+		if(numbers[i]>=numbers[s])
+			break;
+	post_visited_bst(i,e);
+	post_visited_bst(s+1,i-1);
+
 }
+void post_visited_mirror_bst(int s,int e)
+{
+	if(s>e)
+		return ;
+	if(s==e) {
+		S.push(numbers[s]);
+		return ;
+	}
+	S.push(numbers[s]);
+	int i;
+	for(i=s+1;i<=e;i++)
+		if(numbers[i]<numbers[s])
+			break;
+	post_visited_mirror_bst(i,e);
+	post_visited_mirror_bst(s+1,i-1);
+}
+
 
 int main()
 {
@@ -98,14 +92,26 @@ int main()
 		scanf("%d",&numbers[i]);
 	if(check_bst(1,N)) {
 		printf("YES\n");
-		NODE root=NULL;
-		create_bst_tree(1,N,root);
-		post_visited(root);
+		post_visited_bst(1,N);
+		while(!S.empty()) {
+			printf("%d",S.top());
+			S.pop();
+			if(!S.empty())
+				putchar(' ');
+			else
+				putchar('\n');
+		}
 	} else if(check_mirrot_bst(1,N)) {
 		printf("YES\n");
-		NODE root=NULL;
-		create_mirror_bst_tree(1,N,root);
-		post_visited(root);
+		post_visited_mirror_bst(1,N);
+		while(!S.empty()) {
+			printf("%d",S.top());
+			S.pop();
+			if(!S.empty()) 
+				putchar(' ');
+			else
+				putchar('\n');
+		}
 	} else {
 		printf("NO\n");
 	}
